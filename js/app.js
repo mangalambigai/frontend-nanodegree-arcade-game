@@ -158,10 +158,10 @@ Score.prototype.render = function() {
     if (finalText != '')
         text = finalText
     else
-        text = "Score: " + this.score;
-    ctx.font = "30px impact";
-    ctx.textAlign = "center";
-    ctx.strokeStyle = "black";
+        text = 'Score: ' + this.score;
+    ctx.font = '30px impact';
+    ctx.textAlign = 'center';
+    ctx.strokeStyle = 'black';
     ctx.lineWidth = 3;
     ctx.strokeText(text, TILEWIDTH * NUMCOLUMNS / 2, 40);
 
