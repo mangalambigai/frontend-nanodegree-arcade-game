@@ -25,8 +25,8 @@ var Engine = (function(global) {
         ctx = canvas.getContext('2d'),
         lastTime;
 
-    canvas.width = 505;
-    canvas.height = 606;
+    canvas.width = TILEWIDTH*NUMCOLUMNS;
+    canvas.height = TILEHEIGHT*NUMROWS+100;
     doc.body.appendChild(canvas);
 
     /* This function serves as the kickoff point for the game loop itself
@@ -66,7 +66,9 @@ var Engine = (function(global) {
     function init() {
         reset();
         lastTime = Date.now();
-        main();
+        //don't call main yet, choose player first!!
+        //main();
+        choosePlayer(main);
     }
 
     /* This function is called by main (our game loop) and itself calls all
@@ -80,7 +82,7 @@ var Engine = (function(global) {
      */
     function update(dt) {
         updateEntities(dt);
-        // checkCollisions();
+        checkCollisions();
     }
 
     /* This is called by the update function  and loops through all of the
@@ -97,6 +99,10 @@ var Engine = (function(global) {
         player.update();
     }
 
+    function checkCollisions(){
+        player.checkIfLive();
+        gem.checkIfTaken();
+    }
     /* This function initially draws the "game level", it will then call
      * the renderEntities function. Remember, this function is called every
      * game tick (or loop of the game engine) because that's how games work -
@@ -115,8 +121,8 @@ var Engine = (function(global) {
                 'images/grass-block.png',   // Row 1 of 2 of grass
                 'images/grass-block.png'    // Row 2 of 2 of grass
             ],
-            numRows = 6,
-            numCols = 5,
+            numRows = NUMROWS,
+            numCols = NUMCOLUMNS,
             row, col;
 
         /* Loop through the number of rows and columns we've defined above
@@ -132,11 +138,9 @@ var Engine = (function(global) {
                  * so that we get the benefits of caching these images, since
                  * we're using them over and over.
                  */
-                ctx.drawImage(Resources.get(rowImages[row]), col * 101, row * 83);
+                ctx.drawImage(Resources.get(rowImages[row]), col * TILEWIDTH, row * TILEHEIGHT);
             }
         }
-
-
         renderEntities();
     }
 
@@ -148,11 +152,13 @@ var Engine = (function(global) {
         /* Loop through all of the objects within the allEnemies array and call
          * the render function you have defined.
          */
+        gem.render();
         allEnemies.forEach(function(enemy) {
             enemy.render();
         });
 
         player.render();
+        score.render();
     }
 
     /* This function does nothing but it could have been a good place to
@@ -172,7 +178,16 @@ var Engine = (function(global) {
         'images/water-block.png',
         'images/grass-block.png',
         'images/enemy-bug.png',
-        'images/char-boy.png'
+        'images/char-boy.png',
+        'images/Gem Blue.png',
+        'images/Gem Green.png',
+        'images/Gem Orange.png',
+        'images/Heart.png',
+        'images/Star.png',
+        'images/char-cat-girl.png',
+        'images/char-horn-girl.png',
+        'images/char-pink-girl.png',
+        'images/char-princess-girl.png'
     ]);
     Resources.onReady(init);
 
