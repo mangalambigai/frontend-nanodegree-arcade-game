@@ -155,7 +155,10 @@ Score.prototype.render = function() {
     }
 
     //display score
-    text = "Score: " + this.score;
+    if (finalText != '')
+        text = finalText
+    else
+        text = "Score: " + this.score;
     ctx.font = "30px impact";
     ctx.textAlign = "center";
     ctx.strokeStyle = "black";
@@ -174,7 +177,7 @@ Score.prototype.lifeLost = function() {
     this.lives--;
     if (this.lives == 0) {
         //TODO: game over!
-
+        displayFinish('Game Over!!');
     }
 };
 
@@ -188,6 +191,7 @@ Score.prototype.displaySuccess = function() {
     if (score.gemcount > 7) {
         //TODO: display you win!
         //game reset
+        displayFinish('Awesome job!! You won!!!');
     }
 };
 
@@ -202,6 +206,7 @@ var charChoice = [
 ];
 
 function drawPlayers() {
+    ctx.strokeStyle = 'black';
     ctx.clearRect(0, 0, TILEWIDTH * NUMCOLUMNS, TILEHEIGHT * NUMROWS);
     for (var index = 0; index < charChoice.length; index++) {
         ctx.strokeRect(index * TILEWIDTH, TILEHEIGHT * (NUMROWS + 1) / 2, TILEWIDTH, TILEHEIGHT * 3 / 2);
@@ -213,34 +218,40 @@ function drawPlayers() {
 function choosePlayer(enginemain) {
     //TODO: highlight the mouse overed image
     drawPlayers();
-    ctx.canvas.addEventListener('mouseover', function(e) {
-        if (e.offsetY > TILEHEIGHT * (NUMROWS + 1) / 2
-            /*&&
-                    e.offsetY < (TILEHEIGHT*(NUMROWS+1)/2)+TILEHEIGHT*3/2*/
-        ) {
+
+    //we need these events named so we can remove them later.
+    var mousePlayer = function(e) {
+        /*if (e.offsetY > TILEHEIGHT * (NUMROWS + 1) / 2
+                    e.offsetY < (TILEHEIGHT*(NUMROWS+1)/2)+TILEHEIGHT*3/2) */{
             //TODO: offsetX is not supported in all browsers! is there any other way to do this?
             var newCharChoice = Math.floor((e.offsetX / TILEWIDTH));
-            console.log(newCharChoice);
+            //console.log(newCharChoice);
             if (mouseoverChoice != newCharChoice) {
                 //redraw choices
                 drawPlayers();
-                ctx.strokeStyle = 10;
+                ctx.strokeStyle = 'blue';
                 ctx.strokeRect(newCharChoice * TILEWIDTH, TILEHEIGHT * (NUMROWS + 1) / 2, TILEWIDTH, TILEHEIGHT * 3 / 2);
             }
         }
-    });
+    };
 
-    ctx.canvas.addEventListener('click', function(e) {
+    //keep clickPlayer in here for closure: we need to call enginemain after user chooses player.
+    var clickPlayer = function (e) {
         var index = Math.floor(e.offsetX / TILEWIDTH);
         //TODO: offsetX is not supported in all browsers! is there any other way to do this?
         if (index < charChoice.length && index >= 0) {
+            ctx.canvas.removeEventListener('mousemove', mousePlayer);
+            ctx.canvas.removeEventListener('click', clickPlayer);
             var charSprite = charChoice[index];
             ctx.clearRect(0, 0, TILEWIDTH * NUMCOLUMNS, TILEHEIGHT * NUMROWS + 100);
             console.log(charSprite);
             loadGame(charSprite);
             enginemain();
         }
-    });
+    };
+
+    ctx.canvas.addEventListener('mousemove', mousePlayer);
+    ctx.canvas.addEventListener('click', clickPlayer);
 };
 
 // Now instantiate your objects.
@@ -250,6 +261,9 @@ var allEnemies = [];
 var player = new Player('images/char-boy.png');
 var gem = new Gem();
 var score = new Score();
+//this is the final text that displays success or failure message.
+//if it has some content, the game is over!
+var finalText = '';
 
 function loadGame(charSprite) {
     player.sprite = charSprite;
@@ -269,4 +283,8 @@ function loadGame(charSprite) {
         };
         player.handleInput(allowedKeys[e.keyCode]);
     });
+}
+
+function displayFinish(text) {
+    finalText = text;
 }
