@@ -192,7 +192,7 @@ Score.prototype.displaySuccess = function() {
     //TODO: increase level, restart game
     //    this.level++;
     if (score.gemcount > 7) {
-        //TODO: display you win!
+        //display you win!
         //game reset
         displayFinish('Awesome job!! You won!!!');
     }
@@ -201,54 +201,61 @@ Score.prototype.displaySuccess = function() {
 var PlayerMenu = function(){
     this.mouseoverChoice = -1;
     this.charChoice = [
-    'images/char-boy.png',
-    'images/char-cat-girl.png',
-    'images/char-horn-girl.png',
-    'images/char-pink-girl.png',
-    'images/char-princess-girl.png'
-];
+        'images/char-boy.png',
+        'images/char-cat-girl.png',
+        'images/char-horn-girl.png',
+        'images/char-pink-girl.png',
+        'images/char-princess-girl.png'
+    ];
+    this.playerTop = TILEHEIGHT * (NUMROWS + 1) / 2;
+    this.playerHeight = TILEHEIGHT * 3 / 2;
+    this.playerY = TILEHEIGHT * NUMROWS / 2;
 };
 
 PlayerMenu.prototype.drawPlayers = function() {
     ctx.strokeStyle = 'black';
     ctx.clearRect(0, 0, GAMEWIDTH, GAMEHEIGHT);
     for (var index = 0; index < this.charChoice.length; index++) {
-        ctx.strokeRect(index * TILEWIDTH, TILEHEIGHT * (NUMROWS + 1) / 2, TILEWIDTH, TILEHEIGHT * 3 / 2);
-        ctx.drawImage(Resources.get(this.charChoice[index]), index * TILEWIDTH, TILEHEIGHT * NUMROWS / 2);
+        ctx.strokeRect(index * TILEWIDTH, this.playerTop, TILEWIDTH, this.playerHeight);
+        ctx.drawImage(Resources.get(this.charChoice[index]), index * TILEWIDTH, this.playerY);
     }
 
 }
 
 PlayerMenu.prototype.choosePlayer = function(enginemain) {
-    //TODO: highlight the mouse overed image
+    // highlight the mouse overed image
     this.drawPlayers();
 
     //we need these events named so we can remove them later.
     var mousePlayer = function(e) {
-        /*if (e.offsetY > TILEHEIGHT * (NUMROWS + 1) / 2
-                    e.offsetY < (TILEHEIGHT*(NUMROWS+1)/2)+TILEHEIGHT*3/2) */{
+        if (e.offsetY > playerMenu.playerTop &&
+                    e.offsetY < playerMenu.playerTop + playerMenu.playerHeight) {
             //TODO: offsetX is not supported in all browsers! is there any other way to do this?
             var newCharChoice = Math.floor((e.offsetX / TILEWIDTH));
-            if (this.mouseoverChoice != newCharChoice) {
+            if (playerMenu.mouseoverChoice != newCharChoice) {
                 //redraw choices
                 playerMenu.drawPlayers();
                 ctx.strokeStyle = 'blue';
-                ctx.strokeRect(newCharChoice * TILEWIDTH, TILEHEIGHT * (NUMROWS + 1) / 2, TILEWIDTH, TILEHEIGHT * 3 / 2);
+                ctx.strokeRect(newCharChoice * TILEWIDTH, playerMenu.playerTop, TILEWIDTH, playerMenu.playerHeight);
             }
         }
     };
 
     //keep clickPlayer in here for closure: we need to call enginemain after user chooses player.
     var clickPlayer = function (e) {
-        var index = Math.floor(e.offsetX / TILEWIDTH);
-        //TODO: offsetX is not supported in all browsers! is there any other way to do this?
-        if (index < playerMenu.charChoice.length && index >= 0) {
-            ctx.canvas.removeEventListener('mousemove', mousePlayer);
-            ctx.canvas.removeEventListener('click', clickPlayer);
-            var charSprite = playerMenu.charChoice[index];
-            ctx.clearRect(0, 0, GAMEWIDTH, GAMEHEIGHT);
-            loadGame(charSprite);
-            enginemain();
+        if (e.offsetY > playerMenu.playerTop &&
+            e.offsetY < playerMenu.playerTop + playerMenu.playerHeight)
+        {
+            var index = Math.floor(e.offsetX / TILEWIDTH);
+            //TODO: offsetX is not supported in all browsers! is there any other way to do this?
+            if (index < playerMenu.charChoice.length && index >= 0) {
+                ctx.canvas.removeEventListener('mousemove', mousePlayer);
+                ctx.canvas.removeEventListener('click', clickPlayer);
+                var charSprite = playerMenu.charChoice[index];
+                ctx.clearRect(0, 0, GAMEWIDTH, GAMEHEIGHT);
+                loadGame(charSprite);
+                enginemain();
+            }
         }
     };
 
