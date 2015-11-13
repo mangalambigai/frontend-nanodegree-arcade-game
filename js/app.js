@@ -2,7 +2,9 @@ var TILEWIDTH = 101,
     TILEHEIGHT = 83,
     NUMROWS = 6,
     NUMCOLUMNS = 5,
-    TILEYOFFSET = 60;
+    TILEYOFFSET = 60,
+    GAMEWIDTH = TILEWIDTH * NUMCOLUMNS,
+    GAMEHEIGHT = TILEHEIGHT * NUMROWS + 100;
 // Enemies our player must avoid
 var Enemy = function() {
     // Variables applied to each of our instances go here,
@@ -28,7 +30,7 @@ Enemy.prototype.update = function(dt) {
     // which will ensure the game runs at the same speed for
     // all computers.
     this.x += this.speed * dt;
-    if (this.x > TILEWIDTH * NUMCOLUMNS) {
+    if (this.x > GAMEWIDTH) {
         this.x = 0;
     }
 };
@@ -146,12 +148,18 @@ Score.prototype.render = function() {
     var text = "Level: " + this.level;
     //TODO: display level??
     //clear the previous score display
-    ctx.clearRect(0, 0, TILEWIDTH * NUMCOLUMNS, TILEYOFFSET - 15);
+    ctx.clearRect(0, 0, GAMEWIDTH, TILEYOFFSET - 15);
 
     //display lives
     for (var i = 0; i < this.lives; i++) {
         var heartx = 26 * i;
         ctx.drawImage(Resources.get('images/Heart.png'), heartx, 0, 25, 40);
+    }
+
+    //display stars
+    for (var i = 0; i < this.gemcount; i++) {
+        var starx = GAMEWIDTH - 26 * (i + 1);
+        ctx.drawImage(Resources.get('images/Star.png'), starx, 0, 25, 40);
     }
 
     //display score
@@ -162,15 +170,10 @@ Score.prototype.render = function() {
     ctx.font = '30px impact';
     ctx.textAlign = 'center';
     ctx.strokeStyle = 'black';
+    ctx.fillStyle = 'white';
     ctx.lineWidth = 3;
-    ctx.strokeText(text, TILEWIDTH * NUMCOLUMNS / 2, 40);
-
-    //display stars
-    for (var i = 0; i < this.gemcount; i++) {
-        var starx = TILEWIDTH * NUMCOLUMNS - 26 * (i + 1);
-        ctx.drawImage(Resources.get('images/Star.png'), starx, 0, 25, 40);
-    }
-
+    ctx.strokeText(text, GAMEWIDTH / 2, 40);
+    ctx.fillText(text, GAMEWIDTH / 2, 40);
 };
 
 Score.prototype.lifeLost = function() {
@@ -195,29 +198,30 @@ Score.prototype.displaySuccess = function() {
     }
 };
 
-var mouseoverChoice;
-
-var charChoice = [
+var PlayerMenu = function(){
+    this.mouseoverChoice = -1;
+    this.charChoice = [
     'images/char-boy.png',
     'images/char-cat-girl.png',
     'images/char-horn-girl.png',
     'images/char-pink-girl.png',
     'images/char-princess-girl.png'
 ];
+};
 
-function drawPlayers() {
+PlayerMenu.prototype.drawPlayers = function() {
     ctx.strokeStyle = 'black';
-    ctx.clearRect(0, 0, TILEWIDTH * NUMCOLUMNS, TILEHEIGHT * NUMROWS);
-    for (var index = 0; index < charChoice.length; index++) {
+    ctx.clearRect(0, 0, GAMEWIDTH, GAMEHEIGHT);
+    for (var index = 0; index < this.charChoice.length; index++) {
         ctx.strokeRect(index * TILEWIDTH, TILEHEIGHT * (NUMROWS + 1) / 2, TILEWIDTH, TILEHEIGHT * 3 / 2);
-        ctx.drawImage(Resources.get(charChoice[index]), index * TILEWIDTH, TILEHEIGHT * NUMROWS / 2);
+        ctx.drawImage(Resources.get(this.charChoice[index]), index * TILEWIDTH, TILEHEIGHT * NUMROWS / 2);
     }
 
 }
 
-function choosePlayer(enginemain) {
+PlayerMenu.prototype.choosePlayer = function(enginemain) {
     //TODO: highlight the mouse overed image
-    drawPlayers();
+    this.drawPlayers();
 
     //we need these events named so we can remove them later.
     var mousePlayer = function(e) {
@@ -225,10 +229,9 @@ function choosePlayer(enginemain) {
                     e.offsetY < (TILEHEIGHT*(NUMROWS+1)/2)+TILEHEIGHT*3/2) */{
             //TODO: offsetX is not supported in all browsers! is there any other way to do this?
             var newCharChoice = Math.floor((e.offsetX / TILEWIDTH));
-            //console.log(newCharChoice);
-            if (mouseoverChoice != newCharChoice) {
+            if (this.mouseoverChoice != newCharChoice) {
                 //redraw choices
-                drawPlayers();
+                playerMenu.drawPlayers();
                 ctx.strokeStyle = 'blue';
                 ctx.strokeRect(newCharChoice * TILEWIDTH, TILEHEIGHT * (NUMROWS + 1) / 2, TILEWIDTH, TILEHEIGHT * 3 / 2);
             }
@@ -239,12 +242,11 @@ function choosePlayer(enginemain) {
     var clickPlayer = function (e) {
         var index = Math.floor(e.offsetX / TILEWIDTH);
         //TODO: offsetX is not supported in all browsers! is there any other way to do this?
-        if (index < charChoice.length && index >= 0) {
+        if (index < playerMenu.charChoice.length && index >= 0) {
             ctx.canvas.removeEventListener('mousemove', mousePlayer);
             ctx.canvas.removeEventListener('click', clickPlayer);
-            var charSprite = charChoice[index];
-            ctx.clearRect(0, 0, TILEWIDTH * NUMCOLUMNS, TILEHEIGHT * NUMROWS + 100);
-            console.log(charSprite);
+            var charSprite = playerMenu.charChoice[index];
+            ctx.clearRect(0, 0, GAMEWIDTH, GAMEHEIGHT);
             loadGame(charSprite);
             enginemain();
         }
@@ -257,6 +259,8 @@ function choosePlayer(enginemain) {
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
+
+var playerMenu = new PlayerMenu();
 var allEnemies = [];
 var player = new Player('images/char-boy.png');
 var gem = new Gem();

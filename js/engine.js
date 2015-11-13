@@ -25,8 +25,8 @@ var Engine = (function(global) {
         ctx = canvas.getContext('2d'),
         lastTime;
 
-    canvas.width = TILEWIDTH*NUMCOLUMNS;
-    canvas.height = TILEHEIGHT*NUMROWS+100;
+    canvas.width = GAMEWIDTH;
+    canvas.height = GAMEHEIGHT;
     doc.body.appendChild(canvas);
 
     /* This function serves as the kickoff point for the game loop itself
@@ -70,7 +70,7 @@ var Engine = (function(global) {
         lastTime = Date.now();
         //don't call main yet, choose player first!!
         //main();
-        choosePlayer(main);
+        playerMenu.choosePlayer(main);
     }
 
     /* This function is called by main (our game loop) and itself calls all
