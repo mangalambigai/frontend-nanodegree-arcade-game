@@ -70,6 +70,8 @@ Player.prototype.render = function() {
 
 //move the player according to keyboard input
 Player.prototype.handleInput = function(direction) {
+    var oldTileX = this.tilex;
+    var oldTileY = this.tiley;
     //make sure the player stays in the game
     if (direction == 'left' && this.tilex > 0) {
         this.tilex -= 1;
@@ -79,6 +81,13 @@ Player.prototype.handleInput = function(direction) {
         this.tiley -= 1;
     } else if (direction == 'down' && this.tiley < NUMROWS - 1) {
         this.tiley += 1;
+    }
+
+    //Player cant walk on rocks!
+    if(rock.checkLocation(this.tilex, this.tiley))
+    {
+        this.tilex = oldTileX;
+        this.tiley = oldTileY;
     }
 
     if (this.tiley == 0) {
@@ -94,9 +103,38 @@ Player.prototype.checkIfLive = function() {
     allEnemies.forEach(function(enemy) {
         if (Math.abs(enemy.x - player.x) < TILEWIDTH / 2 && enemy.tiley == player.tiley) {
             score.lifeLost();
-            player.reset();
+            resetEntities();
         }
     });
+};
+
+//Constructor of Rock class
+var Rock = function() {
+    this.sprite = 'images/Rock.png';
+    this.reset();
+};
+
+//reset the rock's location
+Rock.prototype.reset=function() {
+    //choose a random tile
+    this.tilex = Math.floor(Math.random() * NUMCOLUMNS);
+    //make sure gem is on paved path
+    this.tiley = Math.floor(Math.random() * 3) + 1;
+};
+
+//TODO: this looks very much like gem display, refactor!!
+//display the rock
+Rock.prototype.render = function() {
+    this.x = TILEWIDTH * this.tilex;
+    //y is top, so subtract 1 tiles
+    this.y = TILEHEIGHT * (this.tiley - 1) + TILEYOFFSET + 50;
+    if (!this.taken) {
+        ctx.drawImage(Resources.get(this.sprite), this.x, this.y, TILEWIDTH, TILEHEIGHT);
+    }
+};
+
+Rock.prototype.checkLocation = function(tilex,tiley) {
+    return (this.tilex== tilex && this.tiley == tiley);
 };
 
 //Constructor of Gem class
@@ -198,10 +236,8 @@ Score.prototype.lifeLost = function() {
 
 //update score for a game won
 Score.prototype.displaySuccess = function() {
-    //TODO: display success!!
     this.score++;
-    player.reset();
-    gem.reset();
+    resetEntities();
     //TODO: increase level, restart game
     //    this.level++;
     if (score.gemcount > 7) {
@@ -286,6 +322,7 @@ var playerMenu = new PlayerMenu();
 var allEnemies = [];
 var player = new Player('images/char-boy.png');
 var gem = new Gem();
+var rock = new Rock();
 var score = new Score();
 //this is the final text that displays success or failure message.
 //if it has some content, the game is over!
@@ -315,4 +352,13 @@ function displayFinish(text) {
 //this is the final text that displays success or failure message.
 //if it has some content, the game is over!
     finalText = text;
+}
+
+/* This function resets all the entities every time player wins or loses.
+* Don't reset the score here!!
+*/
+function resetEntities() {
+    player.reset();
+    gem.reset();
+    rock.reset();
 }

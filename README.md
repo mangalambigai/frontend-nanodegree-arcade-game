@@ -25,8 +25,8 @@ Gems:
 A gem is placed randomly in the paved area. When the player collects it, he can earn a star.
 When user collects maximum number of gems, the game is won.
 
-Coming soon: Rocks:
--------------------
+Rocks:
+------
 A rock is placed randomly in the paved area. User cannot climb on it or over it. But the bugs can crawl over it.
 
 
