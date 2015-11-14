@@ -5,14 +5,15 @@ var TILEWIDTH = 101,
     TILEYOFFSET = 60,
     GAMEWIDTH = TILEWIDTH * NUMCOLUMNS,
     GAMEHEIGHT = TILEHEIGHT * NUMROWS + 100;
+
+// Enemy Constructor
 // Enemies our player must avoid
 var Enemy = function() {
     // Variables applied to each of our instances go here,
-    // we've provided one for you to get started
-
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
     this.sprite = 'images/enemy-bug.png';
+    //always start from left of screen
     this.x = -80;
     //randomly select the tile, assume there are 3 stone tiles, add 1 for the water tile
     this.tiley = Math.floor(Math.random() * 3) + 1;
@@ -40,14 +41,13 @@ Enemy.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
-// Now write your own player class
-// This class requires an update(), render() and
-// a handleInput() method.
+//Player constructor
 var Player = function(charSprite) {
     this.sprite = charSprite;
     this.reset();
 };
 
+//Reset the player to grass tiles
 Player.prototype.reset = function() {
     //choose the x tile randomly
     this.tilex = Math.floor(Math.random() * NUMCOLUMNS);
@@ -55,10 +55,12 @@ Player.prototype.reset = function() {
     this.tiley = NUMROWS - 1;
 };
 
+//Player doesnt move automatically
 Player.prototype.update = function(dt) {
 
 };
 
+//here is where player is drawn
 Player.prototype.render = function() {
     this.x = TILEWIDTH * this.tilex;
     //y is top, so subtract 1 tiles
@@ -66,6 +68,7 @@ Player.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
+//move the player according to keyboard input
 Player.prototype.handleInput = function(direction) {
     //make sure the player stays in the game
     if (direction == 'left' && this.tilex > 0) {
@@ -85,6 +88,7 @@ Player.prototype.handleInput = function(direction) {
     }
 };
 
+//check if the player bumped into any bugs
 Player.prototype.checkIfLive = function() {
     //TODO: if bumped into bug, a life is lost!
     allEnemies.forEach(function(enemy) {
@@ -95,10 +99,12 @@ Player.prototype.checkIfLive = function() {
     });
 };
 
+//Constructor of Gem class
 var Gem = function() {
     this.reset();
 };
 
+//display the gem
 Gem.prototype.render = function() {
     this.x = TILEWIDTH * this.tilex;
     //y is top, so subtract 1 tiles
@@ -108,6 +114,7 @@ Gem.prototype.render = function() {
     }
 };
 
+//check if the gem is taken by player.
 Gem.prototype.checkIfTaken = function() {
     if (!gem.taken && gem.tilex == player.tilex && gem.tiley == player.tiley) {
         score.gemcount++;
@@ -115,6 +122,7 @@ Gem.prototype.checkIfTaken = function() {
     }
 };
 
+//reset the gem to new location and type
 Gem.prototype.reset = function() {
     this.taken = false;
     var gemChoice = [
@@ -131,10 +139,12 @@ Gem.prototype.reset = function() {
     this.tiley = Math.floor(Math.random() * 3) + 1;
 };
 
+//score constructor
 var Score = function() {
     this.reset();
 };
 
+//reset the score, may want to restart game after gameover, or success
 Score.prototype.reset = function() {
     this.score = 0;
     this.gemcount = 0;
@@ -143,6 +153,7 @@ Score.prototype.reset = function() {
     this.lives = 7;
 };
 
+//display the score
 Score.prototype.render = function() {
 
     var text = "Level: " + this.level;
@@ -176,6 +187,7 @@ Score.prototype.render = function() {
     ctx.fillText(text, GAMEWIDTH / 2, 40);
 };
 
+//udate score for a life lost
 Score.prototype.lifeLost = function() {
     this.lives--;
     if (this.lives == 0) {
@@ -184,6 +196,7 @@ Score.prototype.lifeLost = function() {
     }
 };
 
+//update score for a game won
 Score.prototype.displaySuccess = function() {
     //TODO: display success!!
     this.score++;
@@ -198,6 +211,7 @@ Score.prototype.displaySuccess = function() {
     }
 };
 
+//constructor for the player menu
 var PlayerMenu = function(){
     this.mouseoverChoice = -1;
     this.charChoice = [
@@ -212,6 +226,7 @@ var PlayerMenu = function(){
     this.playerY = TILEHEIGHT * NUMROWS / 2;
 };
 
+//draw the players next to each other, draw a rectangle around each of them
 PlayerMenu.prototype.drawPlayers = function() {
     ctx.strokeStyle = 'black';
     ctx.clearRect(0, 0, GAMEWIDTH, GAMEHEIGHT);
@@ -219,14 +234,14 @@ PlayerMenu.prototype.drawPlayers = function() {
         ctx.strokeRect(index * TILEWIDTH, this.playerTop, TILEWIDTH, this.playerHeight);
         ctx.drawImage(Resources.get(this.charChoice[index]), index * TILEWIDTH, this.playerY);
     }
-
 }
 
+//user can choose the player by clicking on one of the images.
+//engine.main is not called until user chooses an image!
 PlayerMenu.prototype.choosePlayer = function(enginemain) {
-    // highlight the mouse overed image
     this.drawPlayers();
-
-    //we need these events named so we can remove them later.
+    //we need these events named so we can removeEventListener them later.
+    // highlight the mouse overed image in blue
     var mousePlayer = function(e) {
         if (e.offsetY > playerMenu.playerTop &&
                     e.offsetY < playerMenu.playerTop + playerMenu.playerHeight) {
@@ -297,5 +312,7 @@ function loadGame(charSprite) {
 }
 
 function displayFinish(text) {
+//this is the final text that displays success or failure message.
+//if it has some content, the game is over!
     finalText = text;
 }
