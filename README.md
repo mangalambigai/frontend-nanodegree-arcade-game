@@ -4,6 +4,8 @@
 The game can be run by launching the index.html
 
 ## Playing the game
+Use the arrow keys to move the player and enjoy.
+
 ### Choosing Avatars
 - When user navigates to the page, 5 avatars get displayed.
 - User can choose an avatar by clicking on it.
