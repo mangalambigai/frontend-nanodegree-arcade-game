@@ -71,6 +71,7 @@ Player.prototype.render = function() {
 };
 
 //move the player according to keyboard input
+//parameter: direction: string, with values left, right, up or down
 Player.prototype.handleInput = function(direction) {
     var oldTileX = this.tilex;
     var oldTileY = this.tiley;
@@ -85,7 +86,7 @@ Player.prototype.handleInput = function(direction) {
         this.tiley += 1;
     }
 
-    //Player cant walk on rocks!
+    //Player can't walk on rocks!
     if(rock.checkLocation(this.tilex, this.tiley))
     {
         this.tilex = oldTileX;
@@ -111,23 +112,23 @@ Player.prototype.checkIfLive = function() {
     });
 };
 
-//Constructor of Rock class
-var Rock = function() {
-    this.sprite = 'images/Rock.png';
-    this.reset();
+//Constructor of Thing - base class of things such as rocks and gems
+//takes the sprite name as arguments
+var Thing = function(sprite) {
+    this.sprite = sprite;
+    this.resetLocation();
 };
 
-//reset the rock's location
-Rock.prototype.reset=function() {
+//resets the location of the thing to random location on the paved tiles
+Thing.prototype.resetLocation = function(){
     //choose a random tile
     this.tilex = Math.floor(Math.random() * NUMCOLUMNS);
-    //make sure gem is on paved path
+    //make sure thing is on paved path
     this.tiley = Math.floor(Math.random() * 3) + 1;
 };
 
-//TODO: this looks very much like gem display, refactor!!
-//display the rock
-Rock.prototype.render = function() {
+//draws the thing on the tile
+Thing.prototype.render = function() {
     this.x = TILEWIDTH * this.tilex;
     //y is top, so subtract 1 tiles
     this.y = TILEHEIGHT * (this.tiley - 1) + TILEYOFFSET + 50;
@@ -136,23 +137,52 @@ Rock.prototype.render = function() {
     }
 };
 
+//Constructor of Rock class, derives from "Thing"
+var Rock = function() {
+    Thing.call(this,'images/Rock.png');
+};
+
+//delegate the prototype calls, but set the type for typeof calls
+Rock.prototype = Object.create(Thing.prototype);
+Rock.prototype.constructor = Rock;
+
+//resetting rock just resets its location, pass the call to Thing's reset method
+Rock.prototype.reset = function()
+{
+    this.resetLocation();
+};
+
+//Checks the location of rock
+//parameters: tilex and tiley locations to check for
 Rock.prototype.checkLocation = function(tilex,tiley) {
     return (this.tilex== tilex && this.tiley == tiley);
 };
 
-//Constructor of Gem class
+
+//Constructor of Gem class,
+//this class derives from Thing, it has to choose a sprite from one of the gems
 var Gem = function() {
+    Thing.call(this, this.randomGem());
     this.reset();
 };
 
-//display the gem
-Gem.prototype.render = function() {
-    this.x = TILEWIDTH * this.tilex;
-    //y is top, so subtract 1 tiles
-    this.y = TILEHEIGHT * (this.tiley - 1) + TILEYOFFSET + 50;
-    if (!this.taken) {
-        ctx.drawImage(Resources.get(this.sprite), this.x, this.y, TILEWIDTH, TILEHEIGHT);
-    }
+//this will delegate the function calls to Thing.prototype,
+//but still keep the constructor name for type checking
+Gem.prototype = Object.create(Thing.prototype);
+Gem.prototype.constructor = Gem;
+
+//choose one of the gem images,
+//no parameters, but return the URI of the chosen gem
+Gem.prototype.randomGem = function()
+{
+    var gemChoice = [
+        encodeURI('images/Gem Blue.png'),
+        encodeURI('images/Gem Green.png'),
+        encodeURI('images/Gem Orange.png')
+    ];
+
+    //choose a random gem
+    return( gemChoice[Math.floor(Math.random() * gemChoice.length)]);
 };
 
 //check if the gem is taken by player.
@@ -166,18 +196,8 @@ Gem.prototype.checkIfTaken = function() {
 //reset the gem to new location and type
 Gem.prototype.reset = function() {
     this.taken = false;
-    var gemChoice = [
-        encodeURI('images/Gem Blue.png'),
-        encodeURI('images/Gem Green.png'),
-        encodeURI('images/Gem Orange.png')
-    ];
-
-    //choose a random gem
-    this.sprite = gemChoice[Math.floor(Math.random() * gemChoice.length)];
-    //choose a random tile
-    this.tilex = Math.floor(Math.random() * NUMCOLUMNS);
-    //make sure gem is on paved path
-    this.tiley = Math.floor(Math.random() * 3) + 1;
+    this.sprite = this.randomGem();
+    this.resetLocation();
 };
 
 //score constructor
