@@ -277,33 +277,36 @@ PlayerMenu.prototype.drawPlayers = function() {
 //engine.main is not called until user chooses an image!
 PlayerMenu.prototype.choosePlayer = function(enginemain) {
     this.drawPlayers();
+    //We need "this" variable in the event functions, but they are bound elsewhere,
+    //So use a local variable
+    var menu = this;
     //we need these events named so we can removeEventListener them later.
     // highlight the mouse overed image in blue
     var mousePlayer = function(e) {
-        if (e.offsetY > playerMenu.playerTop &&
-                    e.offsetY < playerMenu.playerTop + playerMenu.playerHeight) {
+        if (e.offsetY > menu.playerTop &&
+                    e.offsetY < menu.playerTop + menu.playerHeight) {
             //TODO: offsetX is not supported in all browsers! is there any other way to do this?
             var newCharChoice = Math.floor((e.offsetX / TILEWIDTH));
-            if (playerMenu.mouseoverChoice != newCharChoice) {
+            if (menu.mouseoverChoice != newCharChoice) {
                 //redraw choices
-                playerMenu.drawPlayers();
+                menu.drawPlayers();
                 ctx.strokeStyle = 'blue';
-                ctx.strokeRect(newCharChoice * TILEWIDTH, playerMenu.playerTop, TILEWIDTH, playerMenu.playerHeight);
+                ctx.strokeRect(newCharChoice * TILEWIDTH, menu.playerTop, TILEWIDTH, menu.playerHeight);
             }
         }
     };
 
     //keep clickPlayer in here for closure: we need to call enginemain after user chooses player.
     var clickPlayer = function (e) {
-        if (e.offsetY > playerMenu.playerTop &&
-            e.offsetY < playerMenu.playerTop + playerMenu.playerHeight)
+        if (e.offsetY > menu.playerTop &&
+            e.offsetY < menu.playerTop + menu.playerHeight)
         {
             var index = Math.floor(e.offsetX / TILEWIDTH);
             //TODO: offsetX is not supported in all browsers! is there any other way to do this?
-            if (index < playerMenu.charChoice.length && index >= 0) {
+            if (index < menu.charChoice.length && index >= 0) {
                 ctx.canvas.removeEventListener('mousemove', mousePlayer);
                 ctx.canvas.removeEventListener('click', clickPlayer);
-                var charSprite = playerMenu.charChoice[index];
+                var charSprite = menu.charChoice[index];
                 ctx.clearRect(0, 0, GAMEWIDTH, GAMEHEIGHT);
                 loadGame(charSprite);
                 enginemain();
