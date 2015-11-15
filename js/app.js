@@ -100,8 +100,9 @@ Player.prototype.handleInput = function(direction) {
 //check if the player bumped into any bugs
 Player.prototype.checkIfLive = function() {
     //TODO: if bumped into bug, a life is lost!
+    var p = this;
     allEnemies.forEach(function(enemy) {
-        if (Math.abs(enemy.x - player.x) < TILEWIDTH / 2 && enemy.tiley == player.tiley) {
+        if (Math.abs(enemy.x - p.x) < TILEWIDTH / 2 && enemy.tiley == p.tiley) {
             score.lifeLost();
             resetEntities();
         }
@@ -164,9 +165,9 @@ Gem.prototype.checkIfTaken = function() {
 Gem.prototype.reset = function() {
     this.taken = false;
     var gemChoice = [
-        'images/Gem Blue.png',
-        'images/Gem Green.png',
-        'images/Gem Orange.png'
+        encodeURI('images/Gem Blue.png'),
+        encodeURI('images/Gem Green.png'),
+        encodeURI('images/Gem Orange.png')
     ];
 
     //choose a random gem
