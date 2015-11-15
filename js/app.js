@@ -1,3 +1,5 @@
+"use strict";
+
 var TILEWIDTH = 101,
     TILEHEIGHT = 83,
     NUMROWS = 6,
